@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Model Chat with StellarAI</title> <!-- Changed title -->
+    <style>
+/*  PASTE YOUR CSS HERE  */
+    body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #chat-container {
+            width: 80%;
+            max-width: 600px; /* Limit width on larger screens */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden; /* Prevents content from overflowing */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 70vh; /* Set a fixed height for the chat container */
+        }
+
+        #chat-history {
+            flex-grow: 1; /* Makes the chat history fill available space */
+            padding: 10px;
+            overflow-y: auto; /* Adds vertical scrolling */
+            border-bottom: 1px solid #ccc;
+        }
+
+        #input-area {
+            display: flex;
+            padding: 10px;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+            resize: none; /* Prevent textarea resizing */
+        }
+
+        #send-button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #send-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #spinner {
+            display: none; /* Hidden by default */
+            margin-left: 10px;
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .user-message {
+            background-color: #dcf8c6; /* Light green for user messages */
+            text-align: right; /* Align user messages to the right */
+            margin-left: 20%; /* Push user messages to the right */
+        }
+        .ai-message { /*Renamed class */
+            background-color: #f0f0f0;
+            margin-right: 20%;
+        }
+         /* Settings Modal Styles */
+        #settings-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        #settings-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px; /* Limit width */
+            border-radius: 8px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        #settings-content label {
+            display: block;  /* Labels on their own line */
+            margin-bottom: 5px;
+        }
+        #settings-content select,
+        #settings-content input[type="number"],
+        #settings-content input[type="text"]{
+             width: 95%; /* almost full width*/
+             padding: 8px;
+             margin-bottom: 15px;
+             border: 1px solid #ccc;
+             border-radius: 4px;
+        }
+        #settings-content button {
+            padding: 8px 12px;
+            margin-top: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+         }
+        #apiKeyInputs {
+            margin-bottom: 15px;
+        }
+        .api-key-section {
+            margin-bottom: 10px;
+        }
+
+        #providerSelect {
+            margin-bottom: 15px;
+        }
+
+        #settings-form {
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* Style for AI selection buttons */
+        #ai-selection {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        .ai-button {
+            padding: 10px 15px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .ai-button:hover {
+            background-color: #ddd;
+        }
+
+        .ai-button.selected {
+            background-color: #4CAF50; /* Or any color you prefer */
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        /* Style for the advanced settings button */
+        #advanced-settings-button {
+            display: block; /* Make it a block-level element */
+            width: 100%; /* Make it full-width */
+            margin-top: 15px; /* Add some spacing above */
+            /* Other styling from your button styles */
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #settings-content h2, #advanced-settings-content h2 {
+                margin-top: 0; /* Reduce top margin on the h2 */
+        }
+
+        #menu {
+            margin-bottom: 10px;
+        }
+          /* Advanced settings modal*/
+        #advanced-settings-modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        #advanced-settings-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <script>
+       // --- Configuration and State ---
+
+let apiKeys = {
+    stellarai: localStorage.getItem('stellaraiApiKey') || '', // Changed key name
+    openai: localStorage.getItem('openaiApiKey') || '',
+    anthropic: localStorage.getItem('anthropicApiKey') || '',
+};
+let currentProvider = "stellarai"; // Default provider, changed to stellaria
+let currentModel = "gemini-pro";  // Default model
+let currentTemperature = 0.7;
+let currentStopSequences = [];
+let currentSafetySettings = getDefaultSafetySettings();
+
+// Model options for each provider.
+const modelOptions = {
+    stellarai: ["gemini-pro", "gemini-pro-vision", "gemini-1.5-flash", "gemini-2.0-pro"], // Changed key
+    openai: ["gpt-4o", "gpt-3.5-turbo-0125"],
+    anthropic: ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
+};
+
+// --- API Interaction ---
+
+async function generateText(promptText) {
+    const apiKey = apiKeys[currentProvider];
+    if (!apiKey) {
+        alert(`Please enter your ${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)} API key in the Settings.`); // Changed text
+        openSettingsModal();
+        return null;
+    }
+
+    let data, headers, url;
+
+    if (currentProvider === "stellarai") { // Changed provider name
+        const safetySettings = currentSafetySettings;
+        const generationConfig = {
+            temperature: currentTemperature,
+        };
+        if (currentStopSequences.length > 0) {
+            generationConfig.stopSequences = currentStopSequences;
+        }
+        data = {
+            contents: [{ parts: [{ text: promptText }] }],
+            safetySettings,
+            generationConfig,
+        };
+        headers = { 'Content-Type': 'application/json' };
+        url = `https://generativelanguage.googleapis.com/v1/models/${currentModel}:generateContent?key=${apiKey}`;
+
+    } else if (currentProvider === "openai") {
+        data = {
+            model: currentModel,
+            messages: [
+                { role: "system", content: "You are a helpful assistant." },
+                { role: "user", content: promptText }
+            ],
+            temperature: currentTemperature,
+            stop: currentStopSequences.length > 0 ? currentStopSequences : undefined,
+        };
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        };
+        url = 'https://api.openai.com/v1/chat/completions';
+
+    } else if (currentProvider === "anthropic") {
+        data = {
+            model: currentModel,
+            prompt: `\n\nHuman: ${promptText}\n\nAssistant:`,
+            max_tokens_to_sample: 300,
+            temperature: currentTemperature,
+            stop_sequences: currentStopSequences.length > 0 ? currentStopSequences : ["\n\nHuman:"],
+        };
+        headers = {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01'
+        };
+        url = "https://api.anthropic.com/v1/complete";
+
+    } else {
+        alert("Invalid provider selected.");
+        return null;
+    }
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            const errorMessage = errorData.error?.message || errorData.error?.content || errorData.message || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMessage);
+        }
+
+        const result = await response.json();
+        let responseText = "";
+
+        if (currentProvider === "stellarai") { // Changed provider name
+           if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                responseText = result.candidates[0].content.parts[0].text;
+            }
+           else if (result.promptFeedback) {
+              const blockReason = result.promptFeedback.blockReason;
+              const safetyRatings = result.promptFeedback.safetyRatings;
+              let errorMessage = "Response blocked.\n";
+              if(blockReason){
+                errorMessage += `Block reason: ${blockReason}\n`;
+              }
+              if (safetyRatings){
+                errorMessage += "Safety Ratings:\n";
+                safetyRatings.forEach(rating => {
+                        errorMessage += `  Category: ${rating.category}, Probability: ${rating.probability}\n`;
+                    });
+              }
+              throw new Error(errorMessage);
+            }
+             else {
+                throw new Error("No text generated.  Unexpected API response."); // More specific
+            }
+        } else if (currentProvider === "openai") {
+            if (result.choices && result.choices.length > 0) {
+                responseText = result.choices[0].message.content;
+            } else {
+                throw new Error("No text generated. Unexpected OpenAI API response.");
+            }
+        } else if (currentProvider === "anthropic") {
+            if (result.completion) {
+                responseText = result.completion;
+            } else {
+                throw new Error("No text generated. Unexpected Anthropic API response.");
+            }
+        }
+        return responseText;
+
+    } catch (error) {
+        console.error('Error:', error);
+        displayAiMessage(`Error: ${error.message}`);
+        return null;
+    }
+}
+
+function getDefaultSafetySettings() {
+  return [
+        {
+            "category": "HARM_CATEGORY_HARASSMENT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"  // Adjust as needed
+        },
+        {
+            "category": "HARM_CATEGORY_HATE_SPEECH",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+        }
+    ];
+}
+// --- UI Functions ---
+
+function sendMessage() {
+    const userInput = document.getElementById('user-input').value.trim();
+    if (!userInput) return;
+
+    displayUserMessage(userInput);
+    document.getElementById('user-input').value = '';
+    disableInput();
+
+    generateText(userInput)
+        .then(responseText => {
+            enableInput();
+            if (responseText) {
+                displayAiMessage(responseText);
+            }
+        });
+}
+
+function displayUserMessage(text) {
+    appendMessage('user-message', `You: ${text}`);
+}
+
+function displayAiMessage(text) {
+    // Use the capitalized provider name in the AI message
+    appendMessage('ai-message', `${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)}: ${text}`);
+}
+
+function appendMessage(className, text) {
+    const chatHistory = document.getElementById('chat-history');
+    const messageDiv = createElement('div', { class: className + ' message' }, text);
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function clearChat() {
+    document.getElementById('chat-history').innerHTML = '';
+}
+
+function disableInput() {
+    document.getElementById('user-input').disabled = true;
+    document.getElementById('send-button').disabled = true;
+    document.getElementById('spinner').style.display = 'inline-block';
+}
+
+function enableInput() {
+    document.getElementById('user-input').disabled = false;
+    document.getElementById('send-button').disabled = false;
+    document.getElementById('spinner').style.display = 'none';
+}
+
+// --- Settings Modal Functions ---
+
+function openSettingsModal() {
+    document.getElementById('settings-modal').style.display = 'block';
+
+    // Load API Keys
+    document.getElementById('stellaraiApiKeyInput').value = apiKeys.stellarai; // Changed ID
+    document.getElementById('openaiApiKeyInput').value = apiKeys.openai;
+    document.getElementById('anthropicApiKeyInput').value = apiKeys.anthropic;
+    checkAllApiKeyStatus();
+}
+
+function closeSettingsModal() {
+    document.getElementById('settings-modal').style.display = 'none';
+}
+
+function openAdvancedSettings() {
+    document.getElementById('advanced-settings-modal').style.display = 'block';
+    document.getElementById('temperatureInput').value = currentTemperature;
+    document.getElementById('stopSequencesInput').value = currentStopSequences.join(', ');
+    loadSafetySettings();
+    updateModelOptions();
+    document.getElementById('modelSelect').value = currentModel;
+}
+
+function closeAdvancedSettings() {
+    document.getElementById('advanced-settings-modal').style.display = 'none';
+}
+
+function saveApiKey(provider) {
+    const apiKeyInput = document.getElementById(`${provider}ApiKeyInput`);
+    const apiKey = apiKeyInput.value.trim();
+    if (apiKey) {
+        apiKeys[provider] = apiKey;
+        localStorage.setItem(`${provider}ApiKey`, apiKey);
+        checkApiKeyStatus(provider);
+        alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} API Key saved!`); // Changed alert text
+    } else {
+        alert(`Please enter a ${provider.toUpperCase()} API Key.`);
+    }
+}
+
+function clearApiKey(provider) {
+    apiKeys[provider] = '';
+    localStorage.removeItem(`${provider}ApiKey`);
+    document.getElementById(`${provider}ApiKeyInput`).value = ''; // Clear input
+    checkApiKeyStatus(provider);
+    alert(`${provider.charAt(0).toUpperCase() + provider.slice(1)} API Key cleared!`); // Changed alert text
+}
+
+function checkApiKeyStatus(provider) {
+    const statusDiv = document.getElementById(`${provider}ApiKeyStatus`);
+    if (apiKeys[provider]) {
+        statusDiv.textContent = "API Key is set.";
+        statusDiv.style.color = "green";
+    } else {
+        statusDiv.textContent = "API Key is not set.";
+        statusDiv.style.color = "red";
+    }
+}
+function checkAllApiKeyStatus(){
+    checkApiKeyStatus('stellarai');
+    checkApiKeyStatus('openai');
+    checkApiKeyStatus('anthropic');
+}
+function selectAI(provider) {
+    currentProvider = provider;
+    updateAIButtonSelection();
+    closeSettingsModal();
+}
+
+function updateAIButtonSelection() {
+    const aiButtons = document.querySelectorAll('.ai-button');
+    aiButtons.forEach(button => {
+        if (button.dataset.provider === currentProvider) {
+            button.classList.add('selected');
+        } else {
+            button.classList.remove('selected');
+        }
+    });
+}
+
+// --- Advanced Settings Modal Functions ---
+function providerChanged() {
+    currentProvider = document.getElementById('providerSelect').value; //Not really used here
+    updateModelOptions();
+    //Show/hide safety settings.
+    const safetySettingsContainer = document.getElementById('safetySettingsContainer');
+    safetySettingsContainer.style.display = currentProvider ==='stellarai' ? 'block': 'none';
+
+}
+function updateModelOptions() {
+    const modelSelect = document.getElementById('modelSelect');
+    modelSelect.innerHTML = ''; // Clear existing options
+
+    const models = modelOptions[currentProvider];
+    if (models) {
+        for (const model of models) {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelSelect.appendChild(option);
+        }
+
+        if (models.includes(currentModel)) {
+            modelSelect.value = currentModel;
+        } else {
+            modelSelect.selectedIndex = 0;
+            currentModel = modelSelect.value;
+        }
+    }
+}
+
+function applyAdvancedSettings() {
+    currentModel = document.getElementById('modelSelect').value;
+    currentTemperature = parseFloat(document.getElementById('temperatureInput').value);
+    currentStopSequences = document.getElementById('stopSequencesInput').value
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s !== "");
+
+    // Safety Settings (StellarAI/Gemini only)
+    if (currentProvider === "stellarai") { // Changed provider name
+        currentSafetySettings = [];
+        const safetySettingsDiv = document.getElementById('safetySettings');
+        const categories = ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"];
+        for (const category of categories) {
+            const selectElement = document.getElementById(`safety-${category}`);
+            if (selectElement) {
+                currentSafetySettings.push({
+                    category: category,
+                    threshold: selectElement.value,
+                });
+            }
+        }
+    }
+
+    closeAdvancedSettings();
+}
+
+function loadSafetySettings(){
+      const safetySettingsDiv = document.getElementById('safetySettings');
+      safetySettingsDiv.innerHTML = ""; // Clear any existing
+
+      const categories = ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"];
+      const thresholds = ["BLOCK_NONE", "BLOCK_ONLY_HIGH", "BLOCK_MEDIUM_AND_ABOVE", "BLOCK_LOW_AND_ABOVE"];
+
+      for(const category of categories){
+        const label = document.createElement('label');
+        label.textContent = category;
+        label.setAttribute('for', `safety-${category}`);
+        safetySettingsDiv.appendChild(label);
+
+        const select = document.createElement('select');
+        select.id = `safety-${category}`;
+        for (const threshold of thresholds){
+          const option = document.createElement('option');
+          option.value = threshold;
+          option.textContent = threshold;
+          select.appendChild(option);
+        }
+
+        // Find current setting for this category
+        const currentSetting = currentSafetySettings.find(setting => setting.category === category);
+        if(currentSetting){
+          select.value = currentSetting.threshold;
+        }
+
+        safetySettingsDiv.appendChild(select);
+      }
+    }
+// --- Event Listeners ---
+
+window.onclick = function (event) {
+    const settingsModal = document.getElementById('settings-modal');
+    const advancedModal = document.getElementById('advanced-settings-modal');
+    if (event.target == settingsModal) {
+        closeSettingsModal();
+    }
+    if (event.target == advancedModal) {
+        closeAdvancedSettings();
+    }
+};
+
+// --- Helper Function ---
+
+function createElement(tag, attributes = {}, textContent = '') {
+    const element = document.createElement(tag);
+    for (const key in attributes) {
+        element.setAttribute(key, attributes[key]);
+    }
+    element.textContent = textContent;
+    return element;
+}
+
+// --- UI Creation ---
+
+function createSettingsModal() {
+    const modal = createElement('div', { id: 'settings-modal' });
+    const content = createElement('div', { id: 'settings-content' });
+
+    const closeSpan = createElement('span', { class: 'close' }, '×');
+    closeSpan.onclick = closeSettingsModal;
+    content.appendChild(closeSpan);
+
+    content.appendChild(createElement('h2', {}, 'Settings'));
+
+    // AI Selection Buttons
+    const aiSelection = createElement('div', { id: 'ai-selection' });
+    const providers = ['stellarai', 'openai', 'anthropic']; // Changed provider name
+    providers.forEach(provider => {
+        const button = createElement('button', { type: 'button', class: 'ai-button', 'data-provider': provider }, provider.charAt(0).toUpperCase() + provider.slice(1));
+        button.onclick = () => selectAI(provider);
+        aiSelection.appendChild(button);
+    });
+    content.appendChild(aiSelection);
+
+    // API Key Inputs
+    const apiKeyInputs = createElement('div', { id: 'apiKeyInputs' });
+    providers.forEach(provider => {
+        const section = createElement('div', { class: 'api-key-section' });
+
+        const label = createElement('label', { for: `${provider}ApiKeyInput` }, `${provider.charAt(0).toUpperCase() + provider.slice(1)} API Key:`); // Changed label text
+        const input = createElement('input', { type: 'text', id: `${provider}ApiKeyInput`, placeholder: `Enter ${provider.charAt(0).toUpperCase() + provider.slice(1)} API Key` }); // Changed placeholder
+        const saveButton = createElement('button', { type: 'button' }, 'Save');
+        saveButton.onclick = () => saveApiKey(provider);
+        const clearButton = createElement('button', { type: 'button' }, 'Clear');
+        clearButton.onclick = () => clearApiKey(provider);
+        const statusDiv = createElement('div', { class: 'api-key-status', id: `${provider}ApiKeyStatus` });
+
+        section.appendChild(label);
+        section.appendChild(input);
+        section.appendChild(saveButton);
+        section.appendChild(clearButton);
+        section.appendChild(statusDiv);
+        apiKeyInputs.appendChild(section);
+    });
+    content.appendChild(apiKeyInputs);
+
+    // Advanced Settings Button
+    const advancedButton = createElement('button', { type: 'button', id: 'advanced-settings-button' }, 'Advanced Settings');
+    advancedButton.onclick = openAdvancedSettings;
+    content.appendChild(advancedButton);
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+function createAdvancedSettingsModal() {
+    const modal = createElement('div', { id: 'advanced-settings-modal' });
+    const content = createElement('div', { id: 'advanced-settings-content' });
+
+    const closeSpan = createElement('span', { class: 'close' }, '×');
+    closeSpan.onclick = closeAdvancedSettings;
+    content.appendChild(closeSpan);
+
+    content.appendChild(createElement('h2', {}, 'Advanced Settings'));
+
+    const settingsForm = createElement('form', {id: 'settings-form'});
+
+    //Model selection
+    const modelLabel = createElement('label', {for: 'modelSelect'}, "Model:");
+    const modelSelect = createElement('select', {id: 'modelSelect'});
+    settingsForm.appendChild(modelLabel);
+    settingsForm.appendChild(modelSelect);
+
+    // Temperature
+    const tempLabel = createElement('label', { for: 'temperatureInput' }, 'Temperature:');
+    const tempInput = createElement('input', { type: 'number', id: 'temperatureInput', min: '0', max: '2', step: '0.1', value: '0.7' });
+     settingsForm.appendChild(tempLabel);
+    settingsForm.appendChild(tempInput);
+
+    // Stop Sequences
+    const stopLabel = createElement('label', { for: 'stopSequencesInput' }, 'Stop Sequences (comma-separated):');
+    const stopInput = createElement('input', { type: 'text', id: 'stopSequencesInput', placeholder: 'e.g., stop, end' });
+     settingsForm.appendChild(stopLabel);
+    settingsForm.appendChild(stopInput);
+
+    // Safety Settings (Gemini only)
+    const safetyContainer = createElement('div', { id: 'safetySettingsContainer' });
+    safetyContainer.appendChild(createElement('h3', {}, 'Safety Settings'));
+    const safetySettingsDiv = createElement('div', {id: 'safetySettings'});
+    safetyContainer.appendChild(safetySettingsDiv);
+    settingsForm.appendChild(safetyContainer);
+    content.appendChild(settingsForm);
+
+    const applyButton = createElement('button', { type: 'button' }, 'Apply Settings');
+    applyButton.onclick = applyAdvancedSettings;
+    content.appendChild(applyButton);
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+function createChatUI() {
+    const chatContainer = createElement('div', { id: 'chat-container' });
+    const chatHistory = createElement('div', { id: 'chat-history' });
+    const inputArea = createElement('div', { id: 'input-area' });
+    const userInput = createElement('textarea', { id: 'user-input', placeholder: 'Type your message...' });
+    const sendButton = createElement('button', { id: 'send-button' }, 'Send');
+    const spinner = createElement('div', { id: 'spinner' });
+
+    userInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    sendButton.onclick = sendMessage;
+
+    inputArea.appendChild(userInput);
+    inputArea.appendChild(sendButton);
+    inputArea.appendChild(spinner);
+
+    chatContainer.appendChild(chatHistory);
+    chatContainer.appendChild(inputArea);
+
+    // Menu (Clear Chat button)
+    const menuDiv = createElement('div', { id: 'menu' });
+    const clearButton = createElement('button', { id: 'clear-chat-button' }, 'Clear Chat');
+    clearButton.onclick = clearChat;
+    const settingsButton = createElement('button', {}, 'Settings');
+    settingsButton.onclick = openSettingsModal;
+
+    menuDiv.appendChild(clearButton);
+    menuDiv.appendChild(settingsButton);
+    document.body.appendChild(menuDiv);
+    document.body.appendChild(chatContainer);
+}
+
+// --- Initialization ---
+
+//Change the title here
+document.title = "Multi-Model Chat with StellarAI";
+currentSafetySettings = getDefaultSafetySettings();
+createSettingsModal();
+createAdvancedSettingsModal();
+createChatUI();
+updateAIButtonSelection();
+providerChanged(); // Populate the model list
+    </script>
+</body>
+</html>
