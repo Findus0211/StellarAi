@@ -239,7 +239,7 @@
     </style>
 </head>
 <body>
-    <h1>Multi-Model Chat with StellarAI</h1>
+    <h1>StellarAi</h1>
 
     <!-- Settings Modal (Simplified) -->
     <div id="settings-modal">
@@ -251,7 +251,7 @@
             <div id="ai-selection">
                 <button type="button" class="ai-button" data-provider="stellarai" onclick="selectAI('StellarAi')">StellarAI</button>
                 <button type="button" class="ai-button" data-provider="openai" onclick="selectAI('ChatGPT')">OpenAI</button>
-                <button type="button" class="ai-button" data-provider="anthropic" onclick="selectAI('Claude')">Anthropic</button>
+                <button type="button" class="ai-button" data-provider="anthropic" onclick="selectAI('Claude')">Claude</button>
             </div>
 
             <!-- Advanced Settings Button -->
@@ -324,7 +324,7 @@
         let currentSafetySettings = getDefaultSafetySettings();
 
         const modelOptions = {
-            stellarai: ["gemini-pro", "gemini-pro-vision", "gemini-1.5-flash", "gemini-2.0-pro"],
+            stellarai: ["gemini-1.5-flash", "gemini-2.0-pro"],
             openai: ["gpt-4o", "gpt-3.5-turbo-0125"],
             anthropic: ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
         };
