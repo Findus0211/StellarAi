@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Model Chat with StellarAI</title>
+    <title>StellarAI</title>
     <style>
         body {
             font-family: sans-serif;
@@ -249,9 +249,9 @@
 
             <!-- AI Selection Buttons -->
             <div id="ai-selection">
-                <button type="button" class="ai-button" data-provider="stellarai" onclick="selectAI('stellarai')">StellarAI</button>
-                <button type="button" class="ai-button" data-provider="openai" onclick="selectAI('openai')">OpenAI</button>
-                <button type="button" class="ai-button" data-provider="anthropic" onclick="selectAI('anthropic')">Anthropic</button>
+                <button type="button" class="ai-button" data-provider="stellarai" onclick="selectAI('StellarAi')">StellarAI</button>
+                <button type="button" class="ai-button" data-provider="openai" onclick="selectAI('ChatGPT')">OpenAI</button>
+                <button type="button" class="ai-button" data-provider="anthropic" onclick="selectAI('Claude')">Anthropic</button>
             </div>
 
             <!-- Advanced Settings Button -->
@@ -311,7 +311,7 @@
 
         // *** PLACE YOUR API KEYS HERE ***
         const apiKeys = {
-            stellarai: "YOUR_STELLARAI_API_KEY",  // Replace with your actual StellarAI (Gemini) API key
+            stellarai: "AIzaSyCwRGkB59np3kppkEMLSyfY7GuyDTNVUFw",  // Replace with your actual StellarAI (Gemini) API key
             openai: "YOUR_OPENAI_API_KEY",        // Replace with your actual OpenAI API key
             anthropic: "YOUR_ANTHROPIC_API_KEY",    // Replace with your actual Anthropic API key
         };
