@@ -356,7 +356,7 @@
                     generationConfig,
                 };
                 headers = { 'Content-Type': 'application/json' };
-                url = `https://generativelanguage.googleapis.com/v1/models/${gemini-1.5-flash}:generateContent?key=${apiKey}`;
+                url = `https://generativelanguage.googleapis.com/v1/models/${currentmodel}:generateContent?key=${apiKey}`;
 
             } else if (currentProvider === "openai") {
                 data = {
