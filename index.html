@@ -337,18 +337,18 @@
          // *** PLACE YOUR API KEYS HERE ***
          const apiKeys = {
              stellarai: "AIzaSyCwRGkB59np3kppkEMLSyfY7GuyDTNVUFw",
-             openai: "Add soon",
-             anthropic: "Add soon" // Claude Key
+             openai: "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",
+             anthropic: "YOUR_ANTHROPIC_API_KEY" // Claude Key
          }; // Fixed missing closing brace
 
-         let currentProvider = "StellarAi";
+         let currentProvider = "stellarai";
          let currentModel = "gemini-1.5-flash";
          let currentTemperature = 0.7;
          let currentStopSequences = [];
          let currentSafetySettings = getDefaultSafetySettings();
 
          const modelOptions = {
-             stellarai: ["gemini-1.5-flash", "gemini-2-pro"],
+             stellarai: ["gemini-1.5-flash", "gemini-2.0-pro"],
              openai: ["gpt-4o", "gpt-3.5-turbo-0125"],
              anthropic: ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
          };
@@ -358,6 +358,8 @@
          async function generateText(promptText) {
              const apiKey = apiKeys[currentProvider];
              if (!apiKey) {
+                 // This should now never happen, as the keys are hardcoded,
+                 // but it's good to keep some error handling.
                  alert(`API key for ${currentProvider} is missing!`);
                  return null;
              }
