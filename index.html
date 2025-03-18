@@ -16,18 +16,6 @@
              color: white; /* Optional: Set default text color to white for dark background */
          }
 
-         #logo-container {
-             display: flex;
-             justify-content: center;
-             width: 100%;
-             margin-bottom: 20px; /* Add some space below the logo */
-         }
-
-         #logo {
-             max-width: 100px; /* Adjust size as needed */
-             height: auto;
-         }
-
          h1 {
              text-align: center; /* Center the title */
          }
@@ -258,12 +246,24 @@
              flex-direction: column;
          }
 
+         /* Style for safety setting groups */
+         .safety-setting-group {
+             margin-bottom: 15px;
+         }
+
+         .safety-setting-group label {
+             display: block; /* Label on its own line */
+             font-weight: bold;
+             margin-bottom: 5px;
+         }
+
+         .safety-setting-group select {
+             width: 95%; /* Match input width */
+         }
+
      </style>
  </head>
  <body>
-     <div id="logo-container">
-         <img id="logo" src="Logo.png" alt="StellarAI Logo">
-     </div>
      <h1>StellarAI</h1>
 
      <!-- Settings Modal (Simplified) -->
@@ -337,7 +337,7 @@
          // *** PLACE YOUR API KEYS HERE ***
          const apiKeys = {
              stellarai: "AIzaSyCwRGkB59np3kppkEMLSyfY7GuyDTNVUFw",
-             openai: "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",
+             openai: "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",
              anthropic: "YOUR_ANTHROPIC_API_KEY" // Claude Key
          }; // Fixed missing closing brace
 
@@ -636,16 +636,17 @@
              if (currentProvider === "stellarai") {
                  currentSafetySettings = [];
                  const safetySettingsDiv = document.getElementById('safetySettings');
-                 const categories = ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"];
-                 for (const category of categories) {
-                     const selectElement = document.getElementById(`safety-${category}`);
-                     if (selectElement) {
+                 const safetyGroups = safetySettingsDiv.querySelectorAll('.safety-setting-group');
+                 safetyGroups.forEach(group => {
+                     const category = group.dataset.category;
+                     const thresholdSelect = group.querySelector('select');
+                     if (category && thresholdSelect) {
                          currentSafetySettings.push({
                              category: category,
-                             threshold: selectElement.value,
+                             threshold: thresholdSelect.value,
                          });
                      }
-                 }
+                 });
              }
 
              closeAdvancedSettings();
@@ -655,33 +656,58 @@
              const safetySettingsDiv = document.getElementById('safetySettings');
              safetySettingsDiv.innerHTML = ""; // Clear any existing
 
-             const categories = ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"];
-             const thresholds = ["BLOCK_NONE", "BLOCK_ONLY_HIGH", "BLOCK_MEDIUM_AND_ABOVE", "BLOCK_LOW_AND_ABOVE"];
+             // User-friendly category labels and their corresponding API category names
+             const safetyCategories = {
+                 "Harassment": "HARM_CATEGORY_HARASSMENT",
+                 "Hate Speech": "HARM_CATEGORY_HATE_SPEECH",
+                 "Sexually Explicit": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                 "Dangerous Content": "HARM_CATEGORY_DANGEROUS_CONTENT"
+             };
 
-             for(const category of categories){
-                 const label = document.createElement('label');
-                 label.textContent = category;
-                 label.setAttribute('for', `safety-${category}`);
-                 safetySettingsDiv.appendChild(label);
+             // User-friendly threshold options and their corresponding API threshold values
+             const thresholdOptionsMap = {
+                 "No Blocking": "BLOCK_NONE",
+                 "Block Low and Above": "BLOCK_LOW_AND_ABOVE",
+                 "Block Medium and Above": "BLOCK_MEDIUM_AND_ABOVE",
+                 "Block Only High": "BLOCK_ONLY_HIGH"
+             };
+             const thresholdDisplayOptions = Object.keys(thresholdOptionsMap); // Get user-friendly names for dropdown
+
+             for(const label in safetyCategories){
+                 const category = safetyCategories[label];
+
+                 const settingGroup = document.createElement('div');
+                 settingGroup.classList.add('safety-setting-group');
+                 settingGroup.dataset.category = category; // Store API category for easy access
+
+                 const labelElement = document.createElement('label');
+                 labelElement.textContent = label + ":"; // User-friendly label
+                 labelElement.setAttribute('for', `safety-${category}`);
+                 settingGroup.appendChild(labelElement);
 
                  const select = document.createElement('select');
                  select.id = `safety-${category}`;
-                 for (const threshold of thresholds){
-                 const option = document.createElement('option');
-                 option.value = threshold;
-                 option.textContent = threshold;
-                 select.appendChild(option);
+
+                 for (const displayThreshold of thresholdDisplayOptions){
+                     const thresholdValue = thresholdOptionsMap[displayThreshold];
+                     const option = document.createElement('option');
+                     option.value = thresholdValue; // Store API value
+                     option.textContent = displayThreshold; // Display user-friendly text
+                     select.appendChild(option);
                  }
 
-                 // Find current setting for this category
+                 // Find current setting for this category and set the dropdown
                  const currentSetting = currentSafetySettings.find(setting => setting.category === category);
                  if(currentSetting){
-                 select.value = currentSetting.threshold;
+                     select.value = currentSetting.threshold;
+                 } else {
+                     select.value = "BLOCK_MEDIUM_AND_ABOVE"; // Default if not set yet, matches getDefaultSafetySettings
                  }
 
-                 safetySettingsDiv.appendChild(select);
+                 settingGroup.appendChild(select);
+                 safetySettingsDiv.appendChild(settingGroup);
              }
-             }
+         }
 
          // --- Event Listeners ---
 
