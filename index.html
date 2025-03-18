@@ -1,9 +1,8 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
  <html lang="en">
  <head>
      <meta charset="UTF-8">
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>StellarAI</title>
      <title>StellarAI</title>
      <style>
          body {
@@ -13,9 +12,26 @@
              align-items: center;
              height: 100vh;
              margin: 0;
-             background-color: #f0f0f0;
+             background-color: #333; /* Dark gray background for body */
+             color: white; /* Optional: Set default text color to white for dark background */
          }
- 
+
+         #logo-container {
+             display: flex;
+             justify-content: center;
+             width: 100%;
+             margin-bottom: 20px; /* Add some space below the logo */
+         }
+
+         #logo {
+             max-width: 100px; /* Adjust size as needed */
+             height: auto;
+         }
+
+         h1 {
+             text-align: center; /* Center the title */
+         }
+
          #chat-container {
              width: 80%;
              max-width: 600px; /* Limit width on larger screens */
@@ -23,25 +39,27 @@
              border-radius: 8px;
              overflow: hidden; /* Prevents content from overflowing */
              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-             background-color: white;
+             background-color: #555; /* Lighter dark gray for chat container */
              margin-top: 20px;
              display: flex;
              flex-direction: column;
              height: 70vh; /* Set a fixed height for the chat container */
          }
- 
+
          #chat-history {
              flex-grow: 1; /* Makes the chat history fill available space */
              padding: 10px;
              overflow-y: auto; /* Adds vertical scrolling */
              border-bottom: 1px solid #ccc;
+             color: white; /* Ensure chat text is visible on dark background */
          }
- 
+
          #input-area {
              display: flex;
              padding: 10px;
+             background-color: #555; /* Match input area background to chat container */
          }
- 
+
          #user-input {
              flex-grow: 1;
              padding: 8px;
@@ -49,8 +67,10 @@
              border-radius: 4px;
              margin-right: 10px;
              resize: none; /* Prevent textarea resizing */
+             background-color: #f0f0f0; /* Light background for input */
+             color: black; /* Dark text for input */
          }
- 
+
          #send-button {
              padding: 8px 15px;
              background-color: #4CAF50;
@@ -59,12 +79,12 @@
              border-radius: 4px;
              cursor: pointer;
          }
- 
+
          #send-button:disabled {
              background-color: #cccccc;
              cursor: not-allowed;
          }
- 
+
          #spinner {
              display: none; /* Hidden by default */
              margin-left: 10px;
@@ -75,31 +95,32 @@
              height: 20px;
              animation: spin 2s linear infinite;
          }
- 
+
          @keyframes spin {
              0% { transform: rotate(0deg); }
              100% { transform: rotate(360deg); }
          }
- 
+
          .message {
              margin-bottom: 10px;
              padding: 8px;
              border-radius: 4px;
+             color: black; /* Message text color */
          }
- 
+
          .user-message {
              background-color: #dcf8c6; /* Light green for user messages */
              text-align: right; /* Align user messages to the right */
              margin-left: 20%; /* Push user messages to the right */
          }
- 
+
          .ai-message {
              background-color: #f0f0f0; /* Light grey for AI messages */
              margin-right: 20%; /* Push AI messages to the left */
          }
- 
+
          /* --- Settings Modal Styles --- */
- 
+
          #settings-modal {
              display: none; /* Hidden by default */
              position: fixed;
@@ -111,7 +132,7 @@
              overflow: auto;
              background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
          }
- 
+
          #settings-content {
              background-color: #fefefe;
              margin: 15% auto; /* 15% from the top and centered horizontally */
@@ -121,7 +142,7 @@
              max-width: 500px; /* Limit width on larger screens */
              border-radius: 8px;
          }
- 
+
          .close {
              color: #aaa;
              float: right;
@@ -129,20 +150,20 @@
              font-weight: bold;
              cursor: pointer;
          }
- 
+
          .close:hover,
          .close:focus {
              color: black;
              text-decoration: none;
          }
- 
+
          /* Style for AI selection buttons */
          #ai-selection {
              display: flex;
              justify-content: space-around;
              margin-bottom: 15px;
          }
- 
+
          .ai-button {
              padding: 10px 15px;
              background-color: #eee;
@@ -151,17 +172,17 @@
              cursor: pointer;
              transition: background-color 0.3s ease;  /* Smooth transition on hover */
          }
- 
+
          .ai-button:hover {
              background-color: #ddd;
          }
- 
+
          .ai-button.selected {
              background-color: #4CAF50; /* Green */
              color: white;
              border-color: #4CAF50;
          }
- 
+
          /* Style for the advanced settings button */
          #advanced-settings-button {
              display: block; /* Make it a block-level element */
@@ -175,9 +196,9 @@
              border-radius: 4px;
              cursor: pointer;
          }
- 
+
          /* --- Advanced Settings Modal Styles --- */
- 
+
          #advanced-settings-modal {
              display: none;
              position: fixed;
@@ -189,7 +210,7 @@
              overflow: auto;
              background-color: rgba(0,0,0,0.4);
          }
- 
+
          #advanced-settings-content {
              background-color: #fefefe;
              margin: 15% auto;
@@ -199,7 +220,7 @@
              max-width: 500px;
              border-radius: 8px;
          }
- 
+
          #advanced-settings-content label {
              display: block;  /* Labels on their own line */
              margin-bottom: 5px;
@@ -213,7 +234,7 @@
              border: 1px solid #ccc;
              border-radius: 4px;
          }
- 
+
          #advanced-settings-content button {
              padding: 8px 12px;
              margin-top: 5px; /* Add some space above the button */
@@ -236,30 +257,33 @@
              display: flex;
              flex-direction: column;
          }
- 
+
      </style>
  </head>
  <body>
+     <div id="logo-container">
+         <img id="logo" src="Logo.png" alt="StellarAI Logo">
+     </div>
      <h1>StellarAI</h1>
- 
+
      <!-- Settings Modal (Simplified) -->
      <div id="settings-modal">
          <div id="settings-content">
              <span class="close" onclick="closeSettingsModal()">×</span>
              <h2>Settings</h2>
- 
+
              <!-- AI Selection Buttons -->
              <div id="ai-selection">
                  <button type="button" class="ai-button" data-provider="stellarai" onclick="selectAI('stellarai')">StellarAI</button>
                  <button type="button" class="ai-button" data-provider="openai" onclick="selectAI('openai')">ChatGPT</button>
                  <button type="button" class="ai-button" data-provider="anthropic" onclick="selectAI('anthropic')">Claude</button>
              </div>
- 
+
              <!-- Advanced Settings Button -->
              <button type="button" id="advanced-settings-button" onclick="openAdvancedSettings()">Advanced Settings</button>
          </div>
      </div>
- 
+
       <!-- Advanced Settings Modal -->
      <div id="advanced-settings-modal">
          <div id="advanced-settings-content">
@@ -269,15 +293,15 @@
                  <!-- Model Selection -->
                  <label for="modelSelect">Model:</label>
                  <select id="modelSelect"></select>
- 
+
                  <!-- Temperature -->
                  <label for="temperatureInput">Creativity:</label>
                  <input type="number" id="temperatureInput" min="0" max="2" step="0.1" value="0.7">
- 
+
                  <!-- Stop Sequences -->
                  <label for="stopSequencesInput">Stop Sequences (comma-separated):</label>
                  <input type="text" id="stopSequencesInput" placeholder="e.g., stop, end">
- 
+
                  <!-- Safety Settings (StellarAI/Gemini Only) -->
                  <div id="safetySettingsContainer">
                      <h3>Safety Settings</h3>
@@ -286,18 +310,18 @@
                      </div>
                  </div>
              </form>
- 
+
              <button type="button" onclick="applyAdvancedSettings()">Apply Settings</button>
          </div>
      </div>
- 
- 
+
+
      <!-- Menu (using buttons for simplicity in HTML/JS) -->
      <div>
          <button onclick="clearChat()">Clear Chat</button>
          <button onclick="openSettingsModal()">Settings</button>
      </div>
- 
+
      <div id="chat-container">
          <div id="chat-history"></div>
          <div id="input-area">
@@ -306,32 +330,31 @@
              <div id="spinner"></div>
          </div>
      </div>
- 
+
      <script>
          // --- Configuration and State ---
- 
+
          // *** PLACE YOUR API KEYS HERE ***
          const apiKeys = {
-             stellarai: "AIzaSyCwRGkB59np3kppkEMLSyfY7GuyDTNVUFw",  // Replace with your actual StellarAI (Gemini) API key
-             openai: "YOUR_OPENAI_API_KEY",        // Replace with your actual OpenAI API key
-             anthropic: "YOUR_ANTHROPIC_API_KEY",    // Replace with your actual Anthropic API key
-         };
-         // No longer using local storage for keys
- 
+             stellarai: "AIzaSyCwRGkB59np3kppkEMLSyfY7GuyDTNVUFw",
+             openai: "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",
+             anthropic: "YOUR_ANTHROPIC_API_KEY" // Claude Key
+         }; // Fixed missing closing brace
+
          let currentProvider = "stellarai";
          let currentModel = "gemini-1.5-flash";
          let currentTemperature = 0.7;
          let currentStopSequences = [];
          let currentSafetySettings = getDefaultSafetySettings();
- 
+
          const modelOptions = {
              stellarai: ["gemini-1.5-flash", "gemini-2.0-pro"],
              openai: ["gpt-4o", "gpt-3.5-turbo-0125"],
              anthropic: ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
          };
- 
+
          // --- API Interaction ---
- 
+
          async function generateText(promptText) {
              const apiKey = apiKeys[currentProvider];
              if (!apiKey) {
@@ -340,9 +363,9 @@
                  alert(`API key for ${currentProvider} is missing!`);
                  return null;
              }
- 
+
              let data, headers, url;
- 
+
              if (currentProvider === "stellarai") {
                  const safetySettings = currentSafetySettings;
                  const generationConfig = {
@@ -358,7 +381,7 @@
                  };
                  headers = { 'Content-Type': 'application/json' };
                  url = `https://generativelanguage.googleapis.com/v1/models/${currentModel}:generateContent?key=${apiKey}`;
- 
+
              } else if (currentProvider === "openai") {
                  data = {
                      model: currentModel,
@@ -374,7 +397,7 @@
                      'Authorization': `Bearer ${apiKey}`
                  };
                  url = 'https://api.openai.com/v1/chat/completions';
- 
+
              } else if (currentProvider === "anthropic") {
                  data = {
                      model: currentModel,
@@ -389,7 +412,7 @@
                      'anthropic-version': '2023-06-01'
                  };
                  url = "https://api.anthropic.com/v1/complete";
- 
+
              } else {
                  alert("Invalid provider selected.");
                  return null;
@@ -400,16 +423,16 @@
                      headers: headers,
                      body: JSON.stringify(data),
                  });
- 
+
                  if (!response.ok) {
                      const errorData = await response.json();
                      const errorMessage = errorData.error?.message || errorData.error?.content || errorData.message || `HTTP error! status: ${response.status}`;
                      throw new Error(errorMessage);
                  }
- 
+
                  const result = await response.json();
                  let responseText = "";
- 
+
                  if (currentProvider === "stellarai") { // Changed provider name
                      if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
                          responseText = result.candidates[0].content.parts[0].text;
@@ -446,7 +469,7 @@
                      }
                  }
                  return responseText;
- 
+
              } catch (error) {
                  console.error('Error:', error);
                  displayAiMessage(`Error: ${error.message}`);
@@ -473,17 +496,17 @@
                  }
              ];
          }
- 
+
          // --- UI Functions ---
- 
+
          function sendMessage() {
              const userInput = document.getElementById('user-input').value.trim();
              if (!userInput) return;
- 
+
              displayUserMessage(userInput);
              document.getElementById('user-input').value = '';
              disableInput();
- 
+
              generateText(userInput)
                  .then(responseText => {
                      enableInput();
@@ -492,15 +515,15 @@
                      }
                  });
          }
- 
+
          function displayUserMessage(text) {
              appendMessage('user-message', `You: ${text}`);
          }
- 
+
          function displayAiMessage(text) {
              appendMessage('ai-message', `${currentProvider.charAt(0).toUpperCase() + currentProvider.slice(1)}: ${text}`);
          }
- 
+
          function appendMessage(className, text) {
              const chatHistory = document.getElementById('chat-history');
              const messageDiv = document.createElement('div');
@@ -509,34 +532,34 @@
              chatHistory.appendChild(messageDiv);
              chatHistory.scrollTop = chatHistory.scrollHeight;
          }
- 
+
          function clearChat() {
              document.getElementById('chat-history').innerHTML = '';
          }
- 
+
          function disableInput() {
              document.getElementById('user-input').disabled = true;
              document.getElementById('send-button').disabled = true;
              document.getElementById('spinner').style.display = 'inline-block';
          }
- 
+
          function enableInput() {
              document.getElementById('user-input').disabled = false;
              document.getElementById('send-button').disabled = false;
              document.getElementById('spinner').style.display = 'none';
          }
- 
+
          // --- Settings Modal Functions ---
- 
+
          function openSettingsModal() {
              document.getElementById('settings-modal').style.display = 'block';
              updateAIButtonSelection(); // Ensure correct button is highlighted
          }
- 
+
          function closeSettingsModal() {
              document.getElementById('settings-modal').style.display = 'none';
          }
- 
+
          function openAdvancedSettings() {
              document.getElementById('advanced-settings-modal').style.display = 'block';
              // Load settings into the advanced settings modal
@@ -546,19 +569,19 @@
              updateModelOptions(); // Populate the model dropdown
              document.getElementById('modelSelect').value = currentModel;
          }
- 
+
          function closeAdvancedSettings() {
              document.getElementById('advanced-settings-modal').style.display = 'none';
          }
- 
+
          // No longer needed: saveApiKey, clearApiKey, checkApiKeyStatus
- 
+
          function selectAI(provider) {
              currentProvider = provider;
              updateAIButtonSelection();
              closeSettingsModal();
          }
- 
+
          function updateAIButtonSelection() {
              const aiButtons = document.querySelectorAll('.ai-button');
              aiButtons.forEach(button => {
@@ -569,7 +592,7 @@
                  }
              });
          }
- 
+
          // --- Advanced Settings Modal Functions ---
          function providerChanged() {
              currentProvider = document.getElementById('providerSelect').value; //Not really used here
@@ -577,12 +600,12 @@
              //Show/hide safety settings.
              const safetySettingsContainer = document.getElementById('safetySettingsContainer');
              safetySettingsContainer.style.display = currentProvider ==='stellarai' ? 'block': 'none';
- 
+
          }
          function updateModelOptions() {
              const modelSelect = document.getElementById('modelSelect');
              modelSelect.innerHTML = ''; // Clear existing options
- 
+
              const models = modelOptions[currentProvider];
              if (models) {
                  for (const model of models) {
@@ -591,7 +614,7 @@
                      option.textContent = model;
                      modelSelect.appendChild(option);
                  }
- 
+
                  if (models.includes(currentModel)) {
                      modelSelect.value = currentModel;
                  } else {
@@ -600,7 +623,7 @@
                  }
              }
          }
- 
+
          function applyAdvancedSettings() {
              currentModel = document.getElementById('modelSelect').value;
              currentTemperature = parseFloat(document.getElementById('temperatureInput').value);
@@ -608,7 +631,7 @@
                  .split(',')
                  .map(s => s.trim())
                  .filter(s => s !== "");
- 
+
              // Safety Settings (Gemini only)
              if (currentProvider === "stellarai") {
                  currentSafetySettings = [];
@@ -624,23 +647,23 @@
                      }
                  }
              }
- 
+
              closeAdvancedSettings();
          }
- 
+
          function loadSafetySettings(){
              const safetySettingsDiv = document.getElementById('safetySettings');
              safetySettingsDiv.innerHTML = ""; // Clear any existing
- 
+
              const categories = ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"];
              const thresholds = ["BLOCK_NONE", "BLOCK_ONLY_HIGH", "BLOCK_MEDIUM_AND_ABOVE", "BLOCK_LOW_AND_ABOVE"];
- 
+
              for(const category of categories){
                  const label = document.createElement('label');
                  label.textContent = category;
                  label.setAttribute('for', `safety-${category}`);
                  safetySettingsDiv.appendChild(label);
- 
+
                  const select = document.createElement('select');
                  select.id = `safety-${category}`;
                  for (const threshold of thresholds){
@@ -649,19 +672,19 @@
                  option.textContent = threshold;
                  select.appendChild(option);
                  }
- 
+
                  // Find current setting for this category
                  const currentSetting = currentSafetySettings.find(setting => setting.category === category);
                  if(currentSetting){
                  select.value = currentSetting.threshold;
                  }
- 
+
                  safetySettingsDiv.appendChild(select);
              }
              }
- 
+
          // --- Event Listeners ---
- 
+
          // Close the settings modal if clicked outside
          window.onclick = function (event) {
              const settingsModal = document.getElementById('settings-modal');
@@ -673,7 +696,7 @@
                  closeAdvancedSettings();
              }
          };
- 
+
          // Add event listener to user input for Enter key
          document.getElementById('user-input').addEventListener('keydown', (event) => {
              if (event.key === 'Enter' && !event.shiftKey) {
@@ -681,12 +704,11 @@
                  sendMessage();
              }
          });
- 
+
          // --- Initialization ---
          currentSafetySettings = getDefaultSafetySettings();
          updateAIButtonSelection(); // Ensure the correct AI button is initially selected
-         providerChanged();
- 
+
      </script>
  </body>
  </html>
