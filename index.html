@@ -342,13 +342,13 @@
          }; // Fixed missing closing brace
 
          let currentProvider = "stellarai";
-         let currentModel = "gemini-1.5-flash";
+         let currentModel = "gemini-flash-latest";
          let currentTemperature = 0.7;
          let currentStopSequences = [];
          let currentSafetySettings = getDefaultSafetySettings();
 
          const modelOptions = {
-             stellarai: ["gemini-1.5-flash", "gemini-2.0-pro"],
+             stellarai: ["gemini-flash-latest", "gemini-flash-2.5"],
              openai: ["gpt-4o", "gpt-3.5-turbo-0125"],
              anthropic: ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"],
          };
